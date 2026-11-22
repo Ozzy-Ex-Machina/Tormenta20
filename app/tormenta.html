@@ -1,0 +1,1071 @@
+<title>Grimório da Tormenta</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: app de uma coluna para celular — barra de PV/PM fixa no topo, abas fixas embaixo, cartões só onde separam objetos. */
+:root {
+  --bg: #eceef2;
+  --surface: #ffffff;
+  --surface-2: #f5f6f9;
+  --ink: #1a1c23;
+  --muted: #5b606d;
+  --line: #d5d8e0;
+  --accent: #b0122d;
+  --accent-soft: #f7dfe3;
+  --on-accent: #ffffff;
+  --mana: #2b57cf;
+  --mana-soft: #dde6fb;
+  --vida: #1d8549;
+  --vida-soft: #d9f0e2;
+  --warn: #a35f00;
+  --warn-soft: #fbecd2;
+  --f-display: "Marcellus SC", "Trajan Pro", Georgia, serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-num: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 10px;
+  --nav-h: 62px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111217; --surface: #1a1c24; --surface-2: #22252f; --ink: #e8e8ee; --muted: #9a9fac; --line: #2e313d;
+    --accent: #e3394f; --accent-soft: #3a1b22; --on-accent: #ffffff;
+    --mana: #7495ff; --mana-soft: #1d2645; --vida: #43c47e; --vida-soft: #16301f; --warn: #f0a640; --warn-soft: #3a2a12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111217; --surface: #1a1c24; --surface-2: #22252f; --ink: #e8e8ee; --muted: #9a9fac; --line: #2e313d;
+  --accent: #e3394f; --accent-soft: #3a1b22; --on-accent: #ffffff;
+  --mana: #7495ff; --mana-soft: #1d2645; --vida: #43c47e; --vida-soft: #16301f; --warn: #f0a640; --warn-soft: #3a2a12;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+
+/* Topo */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 10px; }
+.top-row { display: flex; align-items: center; gap: 10px; }
+.charpick { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.charpick h1 { font-family: var(--f-display); font-size: 1.25rem; font-weight: 400; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .02em; }
+.charpick small { display: block; color: var(--muted); font-size: .78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sync { font-size: .7rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.sync.cloud { color: var(--vida); border-color: var(--vida); }
+.bars { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.bar { display: flex; align-items: center; gap: 6px; }
+.bar .meter { flex: 1; min-width: 0; position: relative; height: 34px; border-radius: 8px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--line); }
+.bar .fill { position: absolute; inset: 0 auto 0 0; transition: width .25s; }
+.bar.pv .fill { background: var(--vida-soft); }
+.bar.pm .fill { background: var(--mana-soft); }
+.bar .lbl { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: .9rem; }
+.bar .lbl b { font-family: var(--f-num); }
+.bar.pv .lbl span { color: var(--vida); font-weight: 700; font-size: .72rem; letter-spacing: .08em; }
+.bar.pm .lbl span { color: var(--mana); font-weight: 700; font-size: .72rem; letter-spacing: .08em; }
+.step { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 1.15rem; font-weight: 600; cursor: pointer; flex: none; }
+.step:active { background: var(--surface-2); }
+
+/* Conteúdo */
+main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0px)); max-width: 760px; margin: 0 auto; display: grid; gap: 18px; }
+section.blk { display: grid; gap: 10px; min-width: 0; }
+h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.05rem; letter-spacing: .06em; margin: 0; color: var(--accent); display: flex; align-items: center; justify-content: space-between; gap: 8px; text-wrap: balance; }
+h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; min-width: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .8rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 380px) { .grid3 { grid-template-columns: 1fr 1fr; } }
+label.f { display: grid; gap: 4px; font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; min-width: 0; }
+input[type=text], input[type=number], input[type=search], select, textarea {
+  width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 9px 10px; font-size: 16px; text-transform: none; letter-spacing: 0; }
+textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+input[type=number] { font-family: var(--f-num); }
+.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: .9rem; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.btn.pri { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn.mana { background: var(--mana); color: var(--surface); border-color: var(--mana); }
+.btn.ghost { background: none; border-color: transparent; color: var(--accent); padding-inline: 6px; }
+.btn.danger { color: var(--accent); }
+.btn.sm { padding: 6px 10px; font-size: .8rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+/* Atributos */
+.attrs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+@media (max-width: 460px) { .attrs { grid-template-columns: repeat(3, 1fr); } }
+.attr { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 4px 6px; text-align: center; display: grid; gap: 2px; }
+.attr .k { font-size: .7rem; letter-spacing: .12em; font-weight: 700; color: var(--muted); }
+.attr .v { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.attr .v b { font-family: var(--f-num); font-size: 1.35rem; min-width: 2.2ch; }
+.attr .v button { border: 0; background: none; width: 26px; height: 30px; font-size: 1.1rem; color: var(--muted); cursor: pointer; }
+.attr.key { border-color: var(--accent); }
+.attr.key .k { color: var(--accent); }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+@media (max-width: 460px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 10px; }
+.stat .k { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.stat .v { font-family: var(--f-num); font-size: 1.4rem; font-weight: 700; }
+.stat .s { font-size: .72rem; color: var(--muted); }
+
+/* Perícias */
+.skills { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.skill { display: grid; grid-template-columns: 28px 1fr auto 46px; align-items: center; gap: 6px; padding: 6px 10px; border-top: 1px solid var(--line); }
+.skill:first-child { border-top: 0; }
+.skill .nm { font-size: .92rem; min-width: 0; }
+.skill .nm small { color: var(--muted); font-size: .7rem; letter-spacing: .06em; margin-left: 4px; }
+.skill .tot { font-family: var(--f-num); font-weight: 700; min-width: 3ch; text-align: right; }
+.skill input[type=number] { padding: 5px 4px; text-align: center; font-size: 14px; }
+.roll { border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: var(--f-num); font-weight: 700; }
+.roll:active { background: var(--accent-soft); }
+
+/* Magias */
+.circle-head { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-top: 4px; }
+.spell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.spell summary { list-style: none; cursor: pointer; padding: 11px 12px; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+.spell summary::-webkit-details-marker { display: none; }
+.pill { font-family: var(--f-num); font-size: .72rem; font-weight: 700; padding: 3px 7px; border-radius: 999px; background: var(--mana-soft); color: var(--mana); white-space: nowrap; }
+.pill.red { background: var(--accent-soft); color: var(--accent); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.ok { background: var(--vida-soft); color: var(--vida); }
+.pill.plain { background: var(--surface-2); color: var(--muted); }
+.spell .body { padding: 0 12px 12px; display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px 12px; font-size: .85rem; }
+.kv div span { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; display: block; }
+.desc { white-space: pre-wrap; font-size: .92rem; max-width: 65ch; }
+.aprim { display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: .88rem; align-items: start; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: .82rem; white-space: nowrap; cursor: pointer; }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Lançador */
+.caster .line { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px dashed var(--line); }
+.caster .line:first-child { border-top: 0; }
+.qty { display: flex; align-items: center; gap: 4px; }
+.qty b { font-family: var(--f-num); min-width: 2ch; text-align: center; }
+.total { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 12px; border-radius: var(--r); background: var(--mana-soft); }
+.total .big { font-family: var(--f-num); font-size: 2rem; font-weight: 700; color: var(--mana); }
+.total.bad { background: var(--accent-soft); }
+.total.bad .big { color: var(--accent); }
+
+/* Itens */
+.mel { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 8px 0; border-top: 1px dashed var(--line); font-size: .88rem; }
+.mel:first-child { border-top: 0; }
+.mel .fx { color: var(--muted); font-size: .78rem; }
+.ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.ladder div { text-align: center; padding: 6px 2px; border-radius: 6px; background: var(--surface-2); font-size: .72rem; color: var(--muted); }
+.ladder div b { display: block; font-family: var(--f-num); font-size: .8rem; color: var(--ink); }
+.ladder div.on { background: var(--accent); color: var(--on-accent); }
+.ladder div.on b { color: var(--on-accent); }
+
+/* Notas */
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: grid; gap: 6px; cursor: pointer; text-align: left; width: 100%; }
+.note p { margin: 0; color: var(--muted); font-size: .88rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+
+/* Dados */
+.dice { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.die { aspect-ratio: 1.3; max-width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); font-family: var(--f-num); font-weight: 700; font-size: 1.05rem; cursor: pointer; }
+.die:active { background: var(--accent-soft); }
+.log { display: grid; gap: 6px; }
+.log .it { display: flex; justify-content: space-between; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: .85rem; }
+.log .it b { font-family: var(--f-num); font-size: 1.1rem; }
+.crit { color: var(--vida); } .fumble { color: var(--accent); }
+
+/* Navegação */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+nav.tabs button { height: var(--nav-h); border: 0; background: none; display: grid; place-items: center; align-content: center; gap: 3px; font-size: .7rem; color: var(--muted); cursor: pointer; letter-spacing: .03em; }
+nav.tabs button svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+nav.tabs button.on { color: var(--accent); font-weight: 600; }
+
+/* Folha modal */
+.sheet-back { position: fixed; inset: 0; z-index: 40; background: rgba(10, 10, 15, .5); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--bg); width: 100%; max-width: 640px; max-height: 92%; overflow-y: auto; border-radius: 16px 16px 0 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; }
+.sheet .hd { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sheet .hd h2 { font-size: 1.2rem; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: .92rem; max-width: calc(100% - 32px); box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.toast b { font-family: var(--f-num); font-size: 1.15rem; }
+.empty { text-align: center; color: var(--muted); padding: 22px 12px; border: 1px dashed var(--line); border-radius: var(--r); font-size: .9rem; }
+.example { font-size: .75rem; color: var(--warn); background: var(--warn-soft); border-radius: 8px; padding: 6px 10px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top" id="top"></header>
+<main id="main"></main>
+<nav class="tabs" id="tabs"></nav>
+<div id="layer"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= Regras (Tormenta20 — edição Jogo do Ano) ================= */
+const ATTRS = [['for','FOR','Força'],['des','DES','Destreza'],['con','CON','Constituição'],['int','INT','Inteligência'],['sab','SAB','Sabedoria'],['car','CAR','Carisma']];
+const CLASSES = {
+  'Arcanista': { pv: 8,  pvN: 2, pm: 6, chave: 'int', conj: true },
+  'Bárbaro':   { pv: 24, pvN: 6, pm: 3, chave: 'for' },
+  'Bardo':     { pv: 12, pvN: 3, pm: 4, chave: 'car', conj: true },
+  'Bucaneiro': { pv: 16, pvN: 4, pm: 3, chave: 'des' },
+  'Caçador':   { pv: 16, pvN: 4, pm: 4, chave: 'des' },
+  'Cavaleiro': { pv: 20, pvN: 5, pm: 3, chave: 'for' },
+  'Clérigo':   { pv: 16, pvN: 4, pm: 5, chave: 'sab', conj: true },
+  'Druida':    { pv: 16, pvN: 4, pm: 4, chave: 'sab', conj: true },
+  'Guerreiro': { pv: 20, pvN: 5, pm: 3, chave: 'for' },
+  'Inventor':  { pv: 12, pvN: 3, pm: 4, chave: 'int' },
+  'Ladino':    { pv: 12, pvN: 3, pm: 4, chave: 'des' },
+  'Lutador':   { pv: 20, pvN: 5, pm: 3, chave: 'for' },
+  'Nobre':     { pv: 16, pvN: 4, pm: 4, chave: 'car' },
+  'Paladino':  { pv: 20, pvN: 5, pm: 3, chave: 'car' },
+  'Personalizada': { pv: 12, pvN: 3, pm: 4, chave: 'int' },
+};
+const SKILLS = [
+  ['Acrobacia','des'],['Adestramento','car'],['Atletismo','for'],['Atuação','car'],['Cavalgar','des'],['Conhecimento','int'],
+  ['Cura','sab'],['Diplomacia','car'],['Enganação','car'],['Fortitude','con'],['Furtividade','des'],['Guerra','int'],
+  ['Iniciativa','des'],['Intimidação','car'],['Intuição','sab'],['Investigação','int'],['Jogatina','car'],['Ladinagem','des'],
+  ['Luta','for'],['Misticismo','int'],['Nobreza','int'],['Ofício','int'],['Percepção','sab'],['Pilotagem','des'],
+  ['Pontaria','des'],['Reflexos','des'],['Religião','sab'],['Sobrevivência','sab'],['Vontade','sab'],
+];
+const CIRCLE_COST = [0, 1, 3, 6, 10, 15];
+const SCHOOLS = ['Abjuração','Adivinhação','Convocação','Encantamento','Evocação','Ilusão','Necromancia','Transmutação'];
+const MELHORIA_PRECO = [0, 300, 3000, 9000, 18000];
+const ITEM_TIPOS = ['Arma','Armadura','Escudo','Esotérico','Ferramenta','Vestuário','Outro'];
+
+/* Melhorias pré-definidas: efeitos resumidos e editáveis; confira sempre no seu livro. */
+const MELHORIAS = {
+  arma: [
+    { nome: 'Certeira', fx: '+1 em testes de ataque.', atk: 1 },
+    { nome: 'Pungente', fx: 'Bônus de ataque total vira +2.', atk: 1, req: 'Certeira' },
+    { nome: 'Cruel', fx: '+1 em rolagens de dano.', dano: 1 },
+    { nome: 'Atroz', fx: 'Bônus de dano total vira +2.', dano: 1, req: 'Cruel' },
+    { nome: 'Precisa', fx: 'Melhora a margem de ameaça.', notas: 'margem' },
+    { nome: 'Maciça', fx: 'Melhora o multiplicador de crítico.', notas: 'crítico' },
+    { nome: 'Equilibrada', fx: 'Arma mais fácil de manobrar.' },
+    { nome: 'Harmonizada', fx: 'Para itens que canalizam magia.' },
+    { nome: 'Injeção alquímica', fx: 'Compartimento para preparados alquímicos.' },
+    { nome: 'Mira telescópica', fx: 'Para armas de disparo.' },
+    { nome: 'Banhada a ouro', fx: 'Estética; aumenta o valor do item.' },
+    { nome: 'Cravejada de gemas', fx: 'Estética; aumenta o valor do item.' },
+  ],
+  armadura: [
+    { nome: 'Reforçada', fx: '+1 na Defesa.', def: 1 },
+    { nome: 'Ajustada', fx: 'Reduz a penalidade de armadura.' },
+    { nome: 'Sob medida', fx: 'Feita para o seu corpo; mais confortável.' },
+    { nome: 'Delicada', fx: 'Versão mais leve e discreta.' },
+    { nome: 'Espinhosa', fx: 'Espinhos que ferem quem agarra você.' },
+    { nome: 'Polida', fx: 'Superfície espelhada.' },
+    { nome: 'Selada', fx: 'Protege contra o ambiente.' },
+    { nome: 'Banhada a ouro', fx: 'Estética; aumenta o valor do item.' },
+    { nome: 'Cravejada de gemas', fx: 'Estética; aumenta o valor do item.' },
+  ],
+  outro: [
+    { nome: 'Aprimorada', fx: 'Bônus em testes com o item.', notas: 'bonus' },
+    { nome: 'Discreta', fx: 'Mais fácil de esconder.' },
+    { nome: 'Banhada a ouro', fx: 'Estética; aumenta o valor do item.' },
+    { nome: 'Cravejada de gemas', fx: 'Estética; aumenta o valor do item.' },
+  ],
+};
+const MATERIAIS = ['Nenhum','Aço-rubi','Adamante','Gelo eterno','Madeira Tollon','Matéria vermelha','Mitral'];
+
+const melKind = t => t === 'Arma' ? 'arma' : (t === 'Armadura' || t === 'Escudo') ? 'armadura' : 'outro';
+const half = n => Math.floor(n / 2);
+const sgn = n => (n >= 0 ? '+' : '') + n;
+const treino = lvl => lvl >= 15 ? 6 : lvl >= 7 ? 4 : 2;
+const money = n => 'T$ ' + Math.round(n).toLocaleString('pt-BR');
+
+function classInfo(c) {
+  const base = CLASSES[c.classe] || CLASSES.Personalizada;
+  if (c.classe === 'Personalizada') return { ...base, pv: +c.custom.pv || 0, pvN: +c.custom.pvN || 0, pm: +c.custom.pm || 0, conj: true };
+  return base;
+}
+function pvMax(c) { const k = classInfo(c), con = c.attrs.con, n = Math.max(1, c.nivel); return Math.max(1, k.pv + con + (n - 1) * (k.pvN + con) + (+c.pvBonus || 0)); }
+function pmMax(c) { const k = classInfo(c), n = Math.max(1, c.nivel); return Math.max(0, k.pm * n + (c.somaChavePM ? c.attrs[c.chave] : 0) + (+c.pmBonus || 0)); }
+function skillTotal(c, name, attr) { const s = c.pericias[name] || {}; return half(c.nivel) + c.attrs[attr] + (s.t ? treino(c.nivel) : 0) + (+s.o || 0); }
+function cdMagia(c) { return 10 + half(c.nivel) + c.attrs[c.chave] + (+c.cdBonus || 0); }
+function limitePM(c) { return c.nivel + (+c.limiteBonus || 0); }
+function itemCalc(it) {
+  const list = MELHORIAS[melKind(it.tipo)];
+  const sel = it.melhorias || [];
+  let atk = 0, dano = 0, def = 0;
+  const faltando = [];
+  sel.forEach(n => {
+    const m = list.find(x => x.nome === n) || (it.custom || []).find(x => x.nome === n);
+    if (!m) return;
+    atk += +m.atk || 0; dano += +m.dano || 0; def += +m.def || 0;
+    if (m.req && !sel.includes(m.req)) faltando.push(n + ' precisa de ' + m.req);
+  });
+  const n = Math.min(sel.length, 4);
+  const precoMel = MELHORIA_PRECO[n];
+  const total = (+it.precoBase || 0) + precoMel + (+it.precoMaterial || 0) + (it.encantos || []).reduce((s, e) => s + (+e.preco || 0), 0);
+  return { atk, dano, def, n, precoMel, total, faltando, excesso: sel.length > 4 };
+}
+function defesa(c) {
+  let arm = 0, desMax = 99;
+  c.itens.filter(i => i.equipado && (i.tipo === 'Armadura' || i.tipo === 'Escudo')).forEach(i => {
+    arm += (+i.defBase || 0) + itemCalc(i).def;
+  });
+  return 10 + c.attrs.des + arm + (+c.defOutros || 0);
+}
+
+/* ================= Estado ================= */
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+function blankChar(nome) {
+  return {
+    id: uid(), nome: nome || 'Novo personagem', jogador: '', raca: '', origem: '', divindade: '',
+    classe: 'Guerreiro', nivel: 1, chave: 'for', somaChavePM: false,
+    custom: { pv: 12, pvN: 3, pm: 4 },
+    attrs: { for: 0, des: 0, con: 0, int: 0, sab: 0, car: 0 },
+    pvBonus: 0, pmBonus: 0, pvAtual: null, pmAtual: null, pvTemp: 0,
+    defOutros: 0, deslocamento: '9m', tamanho: 'Médio', cdBonus: 0, limiteBonus: 0,
+    pericias: {}, poderes: '', proficiencias: '', condicoes: '', dinheiro: 0, inventario: '',
+    magias: [], itens: [], notas: [], updatedAt: Date.now(),
+  };
+}
+function exampleChar() {
+  const c = blankChar('Kaelen, o Rúnico');
+  Object.assign(c, {
+    exemplo: true, jogador: 'Exemplo', raca: 'Humano', origem: 'Acólito', divindade: 'Wynna',
+    classe: 'Arcanista', nivel: 5, chave: 'int', somaChavePM: true,
+    attrs: { for: -1, des: 1, con: 1, int: 4, sab: 1, car: 0 },
+    poderes: 'Caminho do Arcanista: Mago\nFoco arcano: cajado entalhado',
+    dinheiro: 420, inventario: 'Mochila, saco de dormir, 2 poções de cura, grimório de couro',
+  });
+  c.pericias = { 'Misticismo': { t: true }, 'Conhecimento': { t: true }, 'Vontade': { t: true }, 'Iniciativa': { t: true }, 'Percepção': { t: true } };
+  c.magias = [
+    { id: uid(), nome: 'Dardo Rúnico (exemplo)', circulo: 1, escola: 'Evocação', tipo: 'Arcana', execucao: 'Padrão', alcance: 'Médio', alvo: '1 criatura', duracao: 'Instantânea', resistencia: '—',
+      descricao: 'Magia de exemplo criada para mostrar o app. Troque pelo texto da sua magia.\nUm dardo de energia acerta o alvo e causa 2d4+2 de dano de essência.',
+      aprim: [{ custo: 1, texto: 'Dispara mais um dardo.', rep: true }, { custo: 2, texto: 'O dano vira de fogo e o alvo fica em chamas.', rep: false }], preparada: true },
+    { id: uid(), nome: 'Véu de Névoa (exemplo)', circulo: 2, escola: 'Ilusão', tipo: 'Arcana', execucao: 'Movimento', alcance: 'Pessoal', alvo: 'Você', duracao: 'Cena', resistencia: '—',
+      descricao: 'Magia de exemplo. Uma névoa cobre seu corpo e dificulta acertar você.',
+      aprim: [{ custo: 2, texto: 'Afeta também um aliado adjacente.', rep: true }, { custo: 5, texto: 'Você fica invisível até atacar.', rep: false }], preparada: false },
+  ];
+  c.itens = [
+    { id: uid(), nome: 'Cajado entalhado', tipo: 'Arma', precoBase: 0, melhorias: ['Harmonizada'], dano: '1d6', critico: 'x2', pericia: 'Luta', equipado: true, precoMaterial: 0, material: 'Madeira Tollon', encantos: [], notas: '', custom: [] },
+    { id: uid(), nome: 'Gibão de peles', tipo: 'Armadura', precoBase: 25, defBase: 4, melhorias: ['Reforçada', 'Ajustada'], equipado: true, precoMaterial: 0, material: 'Nenhum', encantos: [], notas: '', custom: [] },
+  ];
+  c.notas = [
+    { id: uid(), titulo: 'Sessão 3 — Valkaria', texto: 'Exemplo de anotação.\nO mestre revelou que o mapa leva às ruínas sob a cidade. Pagar 50 T$ ao informante na próxima sessão.', data: Date.now(), tag: 'Sessão' },
+  ];
+  c.pvAtual = null; c.pmAtual = null;
+  return c;
+}
+
+const LS = 't20.grimorio.v1';
+let state = { chars: {}, order: [], active: null, tab: 'ficha', spellFilter: 0, noteQuery: '', rolls: [] };
+function lsRead() { try { const s = localStorage.getItem(LS); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+function lsWrite() { try { localStorage.setItem(LS, JSON.stringify({ chars: state.chars, order: state.order, active: state.active, tab: state.tab })); } catch (e) {} }
+
+const loaded = lsRead();
+if (loaded && loaded.order && loaded.order.length) Object.assign(state, loaded, { rolls: [] });
+else { const ex = exampleChar(); state.chars[ex.id] = ex; state.order = [ex.id]; state.active = ex.id; }
+const C = () => state.chars[state.active];
+
+/* Nuvem: dados privados do usuário em data/users/<id>/ quando aberto no claude.ai */
+const cloud = { db: null, uid: null, ready: false, timers: {}, busy: {}, again: {} };
+async function cloudInit() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    cloud.db = db; cloud.uid = id;
+    const col = db.collection('data/users/' + id);
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000));
+    const snap = await Promise.race([col.get(), timeout]);
+    let meta = null; const remote = {};
+    snap.docs.forEach(d => { const v = d.data(); if (!v) return; if (d.id === 'meta') meta = v; else if (d.id.startsWith('c_') && v.char) remote[v.char.id] = v.char; });
+    const hasRemote = Object.keys(remote).length > 0;
+    if (hasRemote) {
+      // Mescla: fica a versão mais recente de cada personagem
+      Object.values(remote).forEach(rc => { const lc = state.chars[rc.id]; if (!lc || (rc.updatedAt || 0) >= (lc.updatedAt || 0)) state.chars[rc.id] = rc; });
+      const localOnly = Object.keys(state.chars).filter(k => !remote[k] && !state.chars[k].exemplo);
+      Object.keys(state.chars).forEach(k => { if (!remote[k] && state.chars[k].exemplo) delete state.chars[k]; });
+      state.order = (meta && meta.order ? meta.order.filter(k => state.chars[k]) : []);
+      Object.keys(state.chars).forEach(k => { if (!state.order.includes(k)) state.order.push(k); });
+      if (meta && meta.active && state.chars[meta.active]) state.active = meta.active;
+      if (!state.chars[state.active]) state.active = state.order[0];
+      cloud.ready = true;
+      localOnly.forEach(k => queueSave(k));
+    } else {
+      cloud.ready = true;
+      Object.keys(state.chars).forEach(k => queueSave(k));
+    }
+    saveMeta();
+    lsWrite();
+    render();
+  } catch (e) { cloud.db = null; renderTop(); }
+}
+function queueSave(id) {
+  if (!cloud.ready) return;
+  clearTimeout(cloud.timers[id]);
+  cloud.timers[id] = setTimeout(() => flush(id), 1200);
+}
+async function flush(id) {
+  if (cloud.busy[id]) { cloud.again[id] = true; return; }
+  cloud.busy[id] = true;
+  try {
+    const ref = cloud.db.collection('data/users/' + cloud.uid).doc('c_' + id);
+    if (state.chars[id]) await ref.set({ char: state.chars[id] }); else await ref.delete();
+  } catch (e) { toast('Não consegui salvar na nuvem. Seus dados continuam neste aparelho.'); }
+  cloud.busy[id] = false;
+  if (cloud.again[id]) { cloud.again[id] = false; flush(id); }
+}
+let metaTimer = null, metaBusy = false;
+function saveMeta() {
+  if (!cloud.ready) return;
+  clearTimeout(metaTimer);
+  metaTimer = setTimeout(async () => {
+    if (metaBusy) return saveMeta();
+    metaBusy = true;
+    try { await cloud.db.collection('data/users/' + cloud.uid).doc('meta').set({ order: state.order, active: state.active }); } catch (e) {}
+    metaBusy = false;
+  }, 1500);
+}
+
+function touch(id) {
+  id = id || state.active;
+  const c = state.chars[id]; if (!c) return;
+  if (c.exemplo) delete c.exemplo;
+  c.updatedAt = Date.now();
+  lsWrite(); queueSave(id);
+}
+function setPath(obj, path, val) {
+  const ks = path.split('.'); let o = obj;
+  for (let i = 0; i < ks.length - 1; i++) { if (o[ks[i]] == null) o[ks[i]] = {}; o = o[ks[i]]; }
+  o[ks[ks.length - 1]] = val;
+}
+
+/* ================= Utilidades de UI ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+let toastT = null;
+function toast(html) {
+  let t = $('#toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.innerHTML = html; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200);
+}
+const inp = (bind, val, type = 'text', extra = '') => `<input id="i-${esc(bind)}" type="${type}" data-bind="${esc(bind)}" value="${esc(val)}" ${type === 'number' ? 'inputmode="numeric"' : ''} ${extra}>`;
+const field = (label, html) => `<label class="f">${label}${html}</label>`;
+const ICON = {
+  ficha: '<svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>',
+  magias: '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z"/></svg>',
+  itens: '<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M12 8v8M9 11h6"/></svg>',
+  notas: '<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></svg>',
+  dados: '<svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M3 7l9 5 9-5"/></svg>',
+};
+const TABS = [['ficha','Ficha'],['magias','Magias'],['itens','Itens'],['notas','Notas'],['dados','Dados']];
+
+function roll(qtd, faces) { const r = []; for (let i = 0; i < qtd; i++) r.push(1 + Math.floor(Math.random() * faces)); return r; }
+function rollD20(label, bonus) {
+  const [d] = roll(1, 20); const tot = d + bonus;
+  const cls = d === 20 ? 'crit' : d === 1 ? 'fumble' : '';
+  state.rolls.unshift({ label, txt: `1d20 (${d}) ${sgn(bonus)}`, tot, cls });
+  state.rolls = state.rolls.slice(0, 30);
+  toast(`${esc(label)}: <b class="${cls}">${tot}</b> <span style="opacity:.7">(d20: ${d} ${sgn(bonus)})</span>`);
+  if (state.tab === 'dados') renderMain();
+}
+function rollExpr(expr, label) {
+  const m = String(expr).replace(/\s/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
+  if (!m) { toast('Use o formato 2d6+3'); return; }
+  const q = Math.min(+(m[1] || 1), 100), f = +m[2], mod = +(m[3] || 0);
+  const r = roll(q, f); const tot = r.reduce((a, b) => a + b, 0) + mod;
+  state.rolls.unshift({ label: label || `${q}d${f}${mod ? sgn(mod) : ''}`, txt: `[${r.join(', ')}]${mod ? ' ' + sgn(mod) : ''}`, tot, cls: '' });
+  state.rolls = state.rolls.slice(0, 30);
+  toast(`${esc(label || q + 'd' + f)}: <b>${tot}</b> <span style="opacity:.7">[${r.join(', ')}]${mod ? ' ' + sgn(mod) : ''}</span>`);
+  if (state.tab === 'dados') renderMain();
+}
+
+/* ================= Render ================= */
+function render() { renderTop(); renderMain(); renderTabs(); }
+function renderTop() {
+  const c = C(); const pvM = pvMax(c), pmM = pmMax(c);
+  if (c.pvAtual == null) c.pvAtual = pvM;
+  if (c.pmAtual == null) c.pmAtual = pmM;
+  const pvPct = Math.max(0, Math.min(100, c.pvAtual / pvM * 100)), pmPct = pmM ? Math.max(0, Math.min(100, c.pmAtual / pmM * 100)) : 0;
+  $('#top').innerHTML = `
+    <div class="top-row">
+      <button class="charpick" data-act="chars" aria-label="Trocar personagem">
+        <div style="min-width:0"><h1>${esc(c.nome)}</h1><small>${esc([c.raca, c.classe + ' ' + c.nivel].filter(Boolean).join(' · '))} ▾</small></div>
+      </button>
+      <span class="sync ${cloud.ready ? 'cloud' : ''}">${cloud.ready ? 'Salvo na nuvem' : 'Salvo no aparelho'}</span>
+    </div>
+    <div class="bars">
+      <div class="bar pv">
+        <button class="step" data-act="pv" data-d="-1" aria-label="Perder 1 PV">−</button>
+        <div class="meter" data-act="pvset" role="button" aria-label="Ajustar PV"><div class="fill" style="width:${pvPct}%"></div><div class="lbl"><span>PV</span><b>${c.pvAtual}${c.pvTemp ? '+' + c.pvTemp : ''}/${pvM}</b></div></div>
+        <button class="step" data-act="pv" data-d="1" aria-label="Curar 1 PV">+</button>
+      </div>
+      <div class="bar pm">
+        <button class="step" data-act="pm" data-d="-1" aria-label="Gastar 1 PM">−</button>
+        <div class="meter" data-act="pmset" role="button" aria-label="Ajustar PM"><div class="fill" style="width:${pmPct}%"></div><div class="lbl"><span>PM</span><b>${c.pmAtual}/${pmM}</b></div></div>
+        <button class="step" data-act="pm" data-d="1" aria-label="Recuperar 1 PM">+</button>
+      </div>
+    </div>`;
+}
+function renderTabs() {
+  $('#tabs').innerHTML = TABS.map(([k, l]) => `<button class="${state.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}" aria-label="${l}">${ICON[k]}<span>${l}</span></button>`).join('');
+}
+function renderMain() {
+  const c = C();
+  const views = { ficha: viewFicha, magias: viewMagias, itens: viewItens, notas: viewNotas, dados: viewDados };
+  $('#main').innerHTML = (c.exemplo ? `<div class="example">Personagem de exemplo. Edite à vontade ou crie o seu tocando no nome lá em cima.</div>` : '') + views[state.tab](c);
+}
+
+function viewFicha(c) {
+  const k = classInfo(c);
+  const classOpts = Object.keys(CLASSES).map(n => `<option ${n === c.classe ? 'selected' : ''}>${n}</option>`).join('');
+  const chaveOpts = ATTRS.map(([a, A]) => `<option value="${a}" ${a === c.chave ? 'selected' : ''}>${A}</option>`).join('');
+  const atks = c.itens.filter(i => i.tipo === 'Arma' && i.equipado);
+  return `
+  <section class="blk">
+    <h2>Identidade</h2>
+    <div class="grid2">
+      ${field('Nome', inp('nome', c.nome))}
+      ${field('Jogador', inp('jogador', c.jogador))}
+      ${field('Raça', inp('raca', c.raca))}
+      ${field('Origem', inp('origem', c.origem))}
+      ${field('Classe', `<select id="i-classe" data-bind="classe" data-rerender="1">${classOpts}</select>`)}
+      ${field('Nível', inp('nivel', c.nivel, 'number', 'min="1" max="20" data-rerender="1"'))}
+      ${field('Divindade', inp('divindade', c.divindade))}
+      ${field('Deslocamento', inp('deslocamento', c.deslocamento))}
+    </div>
+    ${c.classe === 'Personalizada' ? `<div class="grid3">
+      ${field('PV 1º nível', inp('custom.pv', c.custom.pv, 'number', 'data-rerender="1"'))}
+      ${field('PV por nível', inp('custom.pvN', c.custom.pvN, 'number', 'data-rerender="1"'))}
+      ${field('PM por nível', inp('custom.pm', c.custom.pm, 'number', 'data-rerender="1"'))}</div>` : ''}
+  </section>
+
+  <section class="blk">
+    <h2>Atributos</h2>
+    <div class="attrs">
+      ${ATTRS.map(([a, A]) => `<div class="attr ${a === c.chave ? 'key' : ''}"><div class="k">${A}</div>
+        <div class="v"><button data-act="attr" data-a="${a}" data-d="-1" aria-label="Diminuir ${A}">−</button><b>${sgn(c.attrs[a])}</b><button data-act="attr" data-a="${a}" data-d="1" aria-label="Aumentar ${A}">+</button></div></div>`).join('')}
+    </div>
+  </section>
+
+  <section class="blk">
+    <h2>Combate</h2>
+    <div class="stats">
+      <div class="stat"><div class="k">Defesa</div><div class="v">${defesa(c)}</div><div class="s">10 + DES + equip.</div></div>
+      <div class="stat"><div class="k">PV máx.</div><div class="v">${pvMax(c)}</div><div class="s">${k.pv}+CON, +${k.pvN}+CON/nív.</div></div>
+      <div class="stat"><div class="k">PM máx.</div><div class="v">${pmMax(c)}</div><div class="s">${k.pm}/nível${c.somaChavePM ? ' + ' + c.chave.toUpperCase() : ''}</div></div>
+      <div class="stat"><div class="k">CD magias</div><div class="v">${cdMagia(c)}</div><div class="s">10 + ½nív. + ${c.chave.toUpperCase()}</div></div>
+    </div>
+    ${atks.length ? `<div class="skills">${atks.map(i => {
+      const ic = itemCalc(i); const per = i.pericia || 'Luta'; const atr = per === 'Pontaria' ? 'des' : 'for';
+      const bonus = skillTotal(c, per, SKILLS.find(s => s[0] === per)[1]) + ic.atk; const dmod = (per === 'Luta' ? c.attrs.for : 0) + ic.dano;
+      return `<div class="skill" style="grid-template-columns:1fr auto auto"><div class="nm">${esc(i.nome)}<small>${esc(i.dano || '')} ${esc(i.critico || '')}</small></div>
+        <button class="roll" data-act="d20" data-label="Ataque: ${esc(i.nome)}" data-b="${bonus}">${sgn(bonus)}</button>
+        <button class="roll" data-act="expr" data-label="Dano: ${esc(i.nome)}" data-e="${esc((i.dano || '1d4') + (dmod ? sgn(dmod) : ''))}">${esc(i.dano || '1d4')}${dmod ? sgn(dmod) : ''}</button></div>`;
+    }).join('')}</div>` : ''}
+    <details class="card"><summary class="small muted" style="cursor:pointer">Ajustes e bônus</summary>
+      <div class="grid2" style="margin-top:10px">
+        ${field('Atributo-chave', `<select id="i-chave" data-bind="chave" data-rerender="1">${chaveOpts}</select>`)}
+        ${field('Outros na Defesa', inp('defOutros', c.defOutros, 'number', 'data-rerender="1"'))}
+        ${field('Bônus de PV', inp('pvBonus', c.pvBonus, 'number', 'data-rerender="1"'))}
+        ${field('Bônus de PM', inp('pmBonus', c.pmBonus, 'number', 'data-rerender="1"'))}
+        ${field('PV temporários', inp('pvTemp', c.pvTemp, 'number', 'data-rerender="1"'))}
+        ${field('Bônus na CD', inp('cdBonus', c.cdBonus, 'number', 'data-rerender="1"'))}
+        ${field('Bônus limite de PM', inp('limiteBonus', c.limiteBonus, 'number', 'data-rerender="1"'))}
+        ${field('Tamanho', inp('tamanho', c.tamanho))}
+      </div>
+      <label class="check" style="margin-top:10px"><input id="i-somaChavePM" type="checkbox" data-bind="somaChavePM" data-rerender="1" ${c.somaChavePM ? 'checked' : ''}> Somar atributo-chave aos PM (conjuradores)</label>
+    </details>
+  </section>
+
+  <section class="blk">
+    <h2>Perícias <span class="muted small" style="font-family:var(--f-body);letter-spacing:0">½ nível + atrib. + treino (${sgn(treino(c.nivel))})</span></h2>
+    <div class="skills">
+      ${SKILLS.map(([n, a]) => { const s = c.pericias[n] || {}; const t = skillTotal(c, n, a); return `
+        <div class="skill">
+          <input id="sk-t-${esc(n)}" type="checkbox" class="check" style="width:20px;height:20px;accent-color:var(--accent)" data-bind="pericias.${esc(n)}.t" data-rerender="1" ${s.t ? 'checked' : ''} aria-label="Treinada em ${n}">
+          <div class="nm">${n}<small>${a.toUpperCase()}</small></div>
+          <button class="roll" data-act="d20" data-label="${n}" data-b="${t}">${sgn(t)}</button>
+          <input id="sk-o-${esc(n)}" type="number" inputmode="numeric" data-bind="pericias.${esc(n)}.o" data-rerender="1" value="${esc(s.o || '')}" placeholder="±" aria-label="Outros bônus em ${n}">
+        </div>`; }).join('')}
+    </div>
+    <p class="small muted" style="margin:0">Marque as treinadas. Toque no bônus para rolar o d20. O último campo é para outros bônus ou penalidades.</p>
+  </section>
+
+  <section class="blk">
+    <h2>Poderes e habilidades</h2>
+    <textarea id="i-poderes" data-bind="poderes" rows="5" placeholder="Habilidades de raça, classe, origem e poderes gerais">${esc(c.poderes)}</textarea>
+    ${field('Proficiências', `<textarea id="i-prof" data-bind="proficiencias" rows="2">${esc(c.proficiencias)}</textarea>`)}
+    ${field('Condições ativas', inp('condicoes', c.condicoes, 'text', 'placeholder="Ex.: abalado, enjoado"'))}
+  </section>
+
+  <section class="blk">
+    <h2>Mochila</h2>
+    ${field('Tibares (T$)', inp('dinheiro', c.dinheiro, 'number'))}
+    <textarea id="i-inv" data-bind="inventario" rows="4" placeholder="Equipamento comum, consumíveis, tesouros">${esc(c.inventario)}</textarea>
+    <p class="small muted" style="margin:0">Armas e armaduras com melhorias ficam na aba Itens.</p>
+  </section>
+
+  <section class="blk">
+    <h2>Dados do app</h2>
+    <div class="row">
+      <button class="btn" data-act="export">Exportar backup</button>
+      <button class="btn" data-act="import">Importar backup</button>
+      <button class="btn" data-act="theme">Tema: ${themeLabel()}</button>
+    </div>
+  </section>`;
+}
+
+function viewMagias(c) {
+  const lim = limitePM(c);
+  const f = state.spellFilter;
+  const list = c.magias.filter(m => !f || (f === 'p' ? m.preparada : m.circulo === f)).sort((a, b) => a.circulo - b.circulo || a.nome.localeCompare(b.nome));
+  const byCircle = {};
+  list.forEach(m => (byCircle[m.circulo] = byCircle[m.circulo] || []).push(m));
+  const chips = [[0, 'Todas'], ['p', 'Preparadas'], [1, '1º'], [2, '2º'], [3, '3º'], [4, '4º'], [5, '5º']];
+  return `
+  <section class="blk">
+    <div class="stats">
+      <div class="stat"><div class="k">PM atuais</div><div class="v" style="color:var(--mana)">${c.pmAtual}</div><div class="s">de ${pmMax(c)}</div></div>
+      <div class="stat"><div class="k">Limite/magia</div><div class="v">${lim}</div><div class="s">igual ao nível</div></div>
+      <div class="stat"><div class="k">CD</div><div class="v">${cdMagia(c)}</div><div class="s">resistência</div></div>
+      <div class="stat"><div class="k">Magias</div><div class="v">${c.magias.length}</div><div class="s">no grimório</div></div>
+    </div>
+    <div class="row"><button class="btn pri" data-act="spellEdit">+ Nova magia</button><button class="btn" data-act="quickCast">Calculadora de PM</button><span class="spacer"></span><button class="btn sm" data-act="rest">Descanso</button></div>
+    <div class="chips" role="tablist">${chips.map(([v, l]) => `<button class="chip ${f === v ? 'on' : ''}" data-act="sfilter" data-v="${v}">${l}</button>`).join('')}</div>
+  </section>
+  <section class="blk">
+    ${list.length ? Object.keys(byCircle).map(ci => `<div class="circle-head">${ci}º círculo · ${CIRCLE_COST[ci]} PM</div>` + byCircle[ci].map(m => spellCard(c, m)).join('')).join('')
+      : `<div class="empty">Nenhuma magia aqui ainda.<br>Toque em <b>+ Nova magia</b> para registrar uma no seu grimório.</div>`}
+  </section>`;
+}
+function spellCard(c, m) {
+  const base = CIRCLE_COST[m.circulo];
+  return `<details class="spell" id="sp-${m.id}">
+    <summary><span class="pill">${base} PM</span><div style="min-width:0"><h3>${esc(m.nome)}</h3><div class="small muted">${esc([m.tipo, m.escola, m.execucao].filter(Boolean).join(' · '))}</div></div>
+      ${m.preparada ? '<span class="pill ok">Prep.</span>' : '<span></span>'}</summary>
+    <div class="body">
+      <div class="kv">
+        <div><span>Execução</span>${esc(m.execucao || '—')}</div><div><span>Alcance</span>${esc(m.alcance || '—')}</div>
+        <div><span>Alvo/Área</span>${esc(m.alvo || '—')}</div><div><span>Duração</span>${esc(m.duracao || '—')}</div>
+        <div><span>Resistência</span>${esc(m.resistencia || '—')}</div><div><span>CD</span>${cdMagia(c)}</div>
+      </div>
+      ${m.descricao ? `<div class="desc">${esc(m.descricao)}</div>` : ''}
+      ${(m.aprim || []).length ? `<div><div class="circle-head" style="margin-bottom:6px">Aprimoramentos</div>${m.aprim.map(a => `<div class="aprim"><span class="pill">+${a.custo} PM</span><span>${esc(a.texto)}${a.rep ? ' <span class="muted small">(repetível)</span>' : ''}</span></div>`).join('<div style="height:6px"></div>')}</div>` : ''}
+      <div class="row">
+        <button class="btn mana" data-act="cast" data-id="${m.id}">Lançar</button>
+        <button class="btn sm" data-act="prep" data-id="${m.id}">${m.preparada ? 'Desmarcar preparada' : 'Marcar preparada'}</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" data-act="spellEdit" data-id="${m.id}">Editar</button>
+      </div>
+    </div></details>`;
+}
+
+function viewItens(c) {
+  return `
+  <section class="blk">
+    <h2>Itens e melhorias</h2>
+    <div class="card small">
+      <div class="muted" style="margin-bottom:6px">Preço extra por número de melhorias (item superior)</div>
+      <div class="ladder">${[1, 2, 3, 4].map(n => `<div>${n} melh.<b>${money(MELHORIA_PRECO[n])}</b></div>`).join('')}</div>
+    </div>
+    <div class="row"><button class="btn pri" data-act="itemEdit">+ Novo item</button></div>
+  </section>
+  <section class="blk">
+    ${c.itens.length ? c.itens.map(i => itemCard(c, i)).join('') : `<div class="empty">Nenhum item cadastrado.<br>Adicione sua arma ou armadura para calcular melhorias e preço.</div>`}
+  </section>`;
+}
+function itemCard(c, it) {
+  const ic = itemCalc(it);
+  const fx = [ic.atk && `${sgn(ic.atk)} ataque`, ic.dano && `${sgn(ic.dano)} dano`, (it.tipo === 'Armadura' || it.tipo === 'Escudo') && `${sgn((+it.defBase || 0) + ic.def)} Defesa`].filter(Boolean);
+  return `<details class="spell">
+    <summary><span class="pill red">${ic.n}/4</span><div style="min-width:0"><h3>${esc(it.nome)}</h3><div class="small muted">${esc(it.tipo)}${it.material && it.material !== 'Nenhum' ? ' · ' + esc(it.material) : ''}${fx.length ? ' · ' + fx.join(', ') : ''}</div></div>
+    ${it.equipado ? '<span class="pill ok">Equip.</span>' : '<span></span>'}</summary>
+    <div class="body">
+      <div class="ladder">${[1, 2, 3, 4].map(n => `<div class="${ic.n >= n ? 'on' : ''}">${n}ª<b>${money(MELHORIA_PRECO[n])}</b></div>`).join('')}</div>
+      ${(it.melhorias || []).length ? `<div>${it.melhorias.map(n => { const m = MELHORIAS[melKind(it.tipo)].concat(it.custom || []).find(x => x.nome === n); return `<div class="aprim"><span class="pill red">✦</span><span><b>${esc(n)}</b> <span class="muted">${esc(m ? m.fx : '')}</span></span></div>`; }).join('<div style="height:6px"></div>')}</div>` : '<div class="muted small">Sem melhorias ainda.</div>'}
+      ${(it.encantos || []).length ? `<div><div class="circle-head" style="margin-bottom:6px">Encantos</div>${it.encantos.map(e => `<div class="aprim"><span class="pill">✧</span><span><b>${esc(e.nome)}</b> <span class="muted">${esc(e.texto || '')}</span></span></div>`).join('<div style="height:6px"></div>')}</div>` : ''}
+      ${ic.faltando.length ? `<div class="pill warn" style="white-space:normal">${esc(ic.faltando.join('; '))}</div>` : ''}
+      ${ic.excesso ? `<div class="pill warn">Mais de 4 melhorias: confira com o mestre.</div>` : ''}
+      <div class="kv">
+        <div><span>Preço base</span>${money(+it.precoBase || 0)}</div>
+        <div><span>Melhorias</span>${money(ic.precoMel)}</div>
+        <div><span>Material + encantos</span>${money((+it.precoMaterial || 0) + (it.encantos || []).reduce((s, e) => s + (+e.preco || 0), 0))}</div>
+        <div><span>Valor total</span><b class="num">${money(ic.total)}</b></div>
+      </div>
+      ${it.notas ? `<div class="desc small">${esc(it.notas)}</div>` : ''}
+      <div class="row">
+        <button class="btn sm" data-act="equip" data-id="${it.id}">${it.equipado ? 'Desequipar' : 'Equipar'}</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" data-act="itemEdit" data-id="${it.id}">Editar e aprimorar</button>
+      </div>
+    </div></details>`;
+}
+
+function viewNotas(c) {
+  const q = state.noteQuery.trim().toLowerCase();
+  const list = c.notas.filter(n => !q || (n.titulo + ' ' + n.texto + ' ' + (n.tag || '')).toLowerCase().includes(q)).sort((a, b) => b.data - a.data);
+  return `
+  <section class="blk">
+    <div class="row"><input id="noteq" type="search" data-act-input="noteq" value="${esc(state.noteQuery)}" placeholder="Buscar nas anotações" style="flex:1"><button class="btn pri" data-act="noteEdit">+ Nova</button></div>
+  </section>
+  <section class="blk">
+    ${list.length ? list.map(n => `<button class="note" data-act="noteEdit" data-id="${n.id}">
+      <div class="row" style="justify-content:space-between"><h3>${esc(n.titulo || 'Sem título')}</h3>${n.tag ? `<span class="pill plain">${esc(n.tag)}</span>` : ''}</div>
+      <p>${esc(n.texto)}</p><div class="small muted">${new Date(n.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}</div></button>`).join('')
+      : `<div class="empty">${q ? 'Nada encontrado.' : 'Sem anotações. Registre NPCs, pistas, missões e o resumo das sessões.'}</div>`}
+  </section>`;
+}
+
+function viewDados() {
+  return `
+  <section class="blk">
+    <h2>Rolar dados</h2>
+    <div class="dice">${[4, 6, 8, 10, 12, 20, 100].map(f => `<button class="die" data-act="expr" data-e="1d${f}">d${f}</button>`).join('')}<button class="die" data-act="expr" data-e="4d6">4d6</button></div>
+    <div class="row"><input id="dexpr" type="text" placeholder="Ex.: 2d8+3" style="flex:1" autocomplete="off"><button class="btn pri" data-act="exprIn">Rolar</button></div>
+  </section>
+  <section class="blk">
+    <h2>Histórico ${state.rolls.length ? '<button class="btn ghost sm" data-act="clearRolls">Limpar</button>' : ''}</h2>
+    <div class="log">${state.rolls.length ? state.rolls.map(r => `<div class="it"><div><div>${esc(r.label)}</div><div class="small muted num">${esc(r.txt)}</div></div><b class="${r.cls}">${r.tot}</b></div>`).join('') : '<div class="empty">As rolagens de perícias, ataques e dados aparecem aqui.</div>'}</div>
+  </section>`;
+}
+
+/* ================= Folhas (modais) ================= */
+function openSheet(html, onMount) {
+  $('#layer').innerHTML = `<div class="sheet-back" data-act="closeBack"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  document.body.style.overflow = 'hidden';
+  if (onMount) onMount($('#layer .sheet'));
+}
+function closeSheet() { $('#layer').innerHTML = ''; document.body.style.overflow = ''; }
+const sheetHead = t => `<div class="hd"><h2>${t}</h2><button class="btn ghost" data-act="close">Fechar</button></div>`;
+
+function askConfirm(msg, okLabel, fn) {
+  openSheet(`${sheetHead('Confirmar')}<p style="margin:0">${msg}</p><div class="row"><button class="btn pri" id="okc">${okLabel}</button><button class="btn" data-act="close">Cancelar</button></div>`,
+    s => s.querySelector('#okc').onclick = () => { closeSheet(); fn(); });
+}
+
+function sheetChars() {
+  const items = state.order.map(id => { const c = state.chars[id]; return `<div class="card row" style="justify-content:space-between">
+    <button class="charpick" data-act="pickChar" data-id="${id}"><div style="min-width:0"><h3>${esc(c.nome)}${id === state.active ? ' <span class="pill ok">ativo</span>' : ''}</h3><small>${esc(c.classe)} ${c.nivel}${c.raca ? ' · ' + esc(c.raca) : ''}</small></div></button>
+    <button class="btn ghost sm" data-act="delChar" data-id="${id}" aria-label="Apagar ${esc(c.nome)}">Apagar</button></div>`; }).join('');
+  openSheet(`${sheetHead('Personagens')}${items}<div class="row"><input id="newname" type="text" placeholder="Nome do novo personagem" style="flex:1"><button class="btn pri" data-act="newChar">Criar</button></div>`);
+}
+
+function sheetSetBar(kind) {
+  const c = C(); const max = kind === 'pv' ? pvMax(c) : pmMax(c);
+  const cur = kind === 'pv' ? c.pvAtual : c.pmAtual;
+  openSheet(`${sheetHead(kind === 'pv' ? 'Pontos de Vida' : 'Pontos de Mana')}
+    <div class="total ${kind === 'pv' ? '' : ''}" style="${kind === 'pv' ? 'background:var(--vida-soft)' : ''}"><span>Atual</span><span class="big num" style="${kind === 'pv' ? 'color:var(--vida)' : ''}">${cur}/${max}</span></div>
+    ${field('Quantidade', `<input id="barn" type="number" inputmode="numeric" value="" placeholder="Ex.: 7">`)}
+    <div class="grid2">
+      <button class="btn pri" data-act="barApply" data-k="${kind}" data-m="-1">${kind === 'pv' ? 'Sofrer dano' : 'Gastar'}</button>
+      <button class="btn" data-act="barApply" data-k="${kind}" data-m="1">${kind === 'pv' ? 'Curar' : 'Recuperar'}</button>
+    </div>
+    <div class="row"><button class="btn sm" data-act="barFull" data-k="${kind}">Encher (${max})</button><button class="btn sm" data-act="barApply" data-k="${kind}" data-m="0">Definir valor exato</button></div>
+    ${kind === 'pv' ? '<p class="small muted" style="margin:0">Dano consome primeiro os PV temporários. PV podem ficar negativos.</p>' : ''}`,
+    s => setTimeout(() => s.querySelector('#barn').focus(), 50));
+}
+
+let castState = null;
+function sheetCast(spellId) {
+  const c = C(); const m = c.magias.find(x => x.id === spellId);
+  castState = { id: spellId, circulo: m ? m.circulo : 1, extra: 0, sel: (m ? m.aprim : []).map(() => 0) };
+  drawCast();
+}
+function drawCast() {
+  const c = C(); const m = castState.id ? c.magias.find(x => x.id === castState.id) : null;
+  const base = CIRCLE_COST[castState.circulo];
+  const aprims = m ? m.aprim : [];
+  const sumA = aprims.reduce((s, a, i) => s + a.custo * castState.sel[i], 0);
+  const total = base + sumA + (+castState.extra || 0);
+  const lim = limitePM(c);
+  const over = total > lim, broke = total > c.pmAtual;
+  openSheet(`${sheetHead(m ? esc(m.nome) : 'Calculadora de PM')}
+    ${!m ? `${field('Círculo', `<div class="chips">${[1, 2, 3, 4, 5].map(n => `<button class="chip ${castState.circulo === n ? 'on' : ''}" data-act="castCirc" data-v="${n}">${n}º · ${CIRCLE_COST[n]} PM</button>`).join('')}</div>`)}` : ''}
+    <div class="card caster">
+      <div class="line"><span>Custo base (${castState.circulo}º círculo)</span><b class="num">${base} PM</b></div>
+      ${aprims.map((a, i) => `<div class="line"><span><span class="pill">+${a.custo}</span> ${esc(a.texto)}</span>
+        ${a.rep ? `<div class="qty"><button class="step" data-act="castA" data-i="${i}" data-d="-1">−</button><b>${castState.sel[i]}</b><button class="step" data-act="castA" data-i="${i}" data-d="1">+</button></div>`
+                : `<label class="check"><input type="checkbox" data-act="castT" data-i="${i}" ${castState.sel[i] ? 'checked' : ''}></label>`}</div>`).join('')}
+      <div class="line"><span>Outros custos (poderes, etc.)</span><div class="qty"><button class="step" data-act="castX" data-d="-1">−</button><b>${castState.extra}</b><button class="step" data-act="castX" data-d="1">+</button></div></div>
+    </div>
+    <div class="total ${over || broke ? 'bad' : ''}"><div><div>Custo total</div><div class="small muted">Limite por magia: ${lim} PM · Você tem ${c.pmAtual} PM</div></div><span class="big">${total}</span></div>
+    ${over ? `<div class="pill warn" style="white-space:normal">Passa do limite de PM por magia (${lim}). Reduza os aprimoramentos.</div>` : ''}
+    ${broke && !over ? `<div class="pill warn" style="white-space:normal">PM insuficientes.</div>` : ''}
+    <div class="row"><button class="btn mana" data-act="castGo" data-t="${total}" ${broke ? 'disabled' : ''}>Gastar ${total} PM</button><span class="muted small">CD ${cdMagia(c)}</span></div>`);
+}
+
+let editBuf = null;
+function sheetSpell(id) {
+  const c = C(); const m = id ? c.magias.find(x => x.id === id) : null;
+  editBuf = JSON.parse(JSON.stringify(m || { id: uid(), nome: '', circulo: 1, escola: 'Evocação', tipo: c.classe === 'Clérigo' || c.classe === 'Druida' ? 'Divina' : 'Arcana', execucao: 'Padrão', alcance: '', alvo: '', duracao: '', resistencia: '', descricao: '', aprim: [], preparada: false }));
+  drawSpellEdit(!!m);
+}
+function drawSpellEdit(existing) {
+  const m = editBuf;
+  openSheet(`${sheetHead(existing ? 'Editar magia' : 'Nova magia')}
+    ${field('Nome', `<input id="e-nome" type="text" data-eb="nome" value="${esc(m.nome)}">`)}
+    <div class="grid3">
+      ${field('Círculo', `<select id="e-circ" data-eb="circulo" data-n="1">${[1, 2, 3, 4, 5].map(n => `<option value="${n}" ${m.circulo === n ? 'selected' : ''}>${n}º (${CIRCLE_COST[n]} PM)</option>`).join('')}</select>`)}
+      ${field('Tipo', `<select id="e-tipo" data-eb="tipo">${['Arcana', 'Divina', 'Universal'].map(t => `<option ${m.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}</select>`)}
+      ${field('Escola', `<select id="e-esc" data-eb="escola">${SCHOOLS.map(t => `<option ${m.escola === t ? 'selected' : ''}>${t}</option>`).join('')}</select>`)}
+    </div>
+    <div class="grid2">
+      ${field('Execução', `<input id="e-exe" type="text" data-eb="execucao" value="${esc(m.execucao)}">`)}
+      ${field('Alcance', `<input id="e-alc" type="text" data-eb="alcance" value="${esc(m.alcance)}">`)}
+      ${field('Alvo / Área', `<input id="e-alv" type="text" data-eb="alvo" value="${esc(m.alvo)}">`)}
+      ${field('Duração', `<input id="e-dur" type="text" data-eb="duracao" value="${esc(m.duracao)}">`)}
+    </div>
+    ${field('Resistência', `<input id="e-res" type="text" data-eb="resistencia" value="${esc(m.resistencia)}" placeholder="Ex.: Vontade anula">`)}
+    ${field('Descrição', `<textarea id="e-desc" data-eb="descricao" rows="5">${esc(m.descricao)}</textarea>`)}
+    <div class="card" style="display:grid;gap:10px">
+      <div class="row" style="justify-content:space-between"><b>Aprimoramentos</b><button class="btn sm" data-act="aprimAdd">+ Aprimoramento</button></div>
+      ${m.aprim.length ? m.aprim.map((a, i) => `<div style="display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:start">
+        <label class="f">+PM<input id="ea-c-${i}" type="number" inputmode="numeric" data-ea="${i}" data-k="custo" value="${a.custo}"></label>
+        <div style="display:grid;gap:6px"><textarea id="ea-t-${i}" rows="2" data-ea="${i}" data-k="texto" placeholder="O que o aprimoramento faz">${esc(a.texto)}</textarea>
+        <div class="row"><label class="check"><input id="ea-r-${i}" type="checkbox" data-ea="${i}" data-k="rep" ${a.rep ? 'checked' : ''}> Pode repetir</label><span class="spacer"></span><button class="btn ghost sm" data-act="aprimDel" data-i="${i}">Remover</button></div></div></div>`).join('') : '<div class="muted small">Ex.: “+1 PM: aumenta o dano em +1d6”.</div>'}
+    </div>
+    <label class="check"><input id="e-prep" type="checkbox" data-eb="preparada" ${m.preparada ? 'checked' : ''}> Preparada / favorita</label>
+    <div class="row"><button class="btn pri" data-act="spellSave">Salvar magia</button>${existing ? '<span class="spacer"></span><button class="btn danger" data-act="spellDel">Apagar</button>' : ''}</div>`);
+}
+
+function sheetItem(id) {
+  const c = C(); const it = id ? c.itens.find(x => x.id === id) : null;
+  editBuf = JSON.parse(JSON.stringify(it || { id: uid(), nome: '', tipo: 'Arma', precoBase: 0, defBase: 0, melhorias: [], custom: [], material: 'Nenhum', precoMaterial: 0, encantos: [], dano: '', critico: '', pericia: 'Luta', equipado: false, notas: '' }));
+  editBuf.custom = editBuf.custom || []; editBuf.encantos = editBuf.encantos || [];
+  drawItemEdit(!!it);
+}
+function drawItemEdit(existing) {
+  const it = editBuf; const ic = itemCalc(it);
+  const list = MELHORIAS[melKind(it.tipo)].concat(it.custom);
+  const isArm = it.tipo === 'Armadura' || it.tipo === 'Escudo';
+  openSheet(`${sheetHead(existing ? 'Aprimorar item' : 'Novo item')}
+    ${field('Nome', `<input id="x-nome" type="text" data-eb="nome" value="${esc(it.nome)}" placeholder="Ex.: Espada longa">`)}
+    <div class="grid2">
+      ${field('Tipo', `<select id="x-tipo" data-eb="tipo" data-redraw="item">${ITEM_TIPOS.map(t => `<option ${it.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}</select>`)}
+      ${field('Preço base (T$)', `<input id="x-preco" type="number" inputmode="numeric" data-eb="precoBase" data-n="1" data-redraw="item" value="${esc(it.precoBase)}">`)}
+      ${it.tipo === 'Arma' ? `
+        ${field('Dano', `<input id="x-dano" type="text" data-eb="dano" value="${esc(it.dano)}" placeholder="1d8">`)}
+        ${field('Crítico', `<input id="x-crit" type="text" data-eb="critico" value="${esc(it.critico)}" placeholder="19/x2">`)}
+        ${field('Perícia de ataque', `<select id="x-per" data-eb="pericia"><option ${it.pericia === 'Luta' ? 'selected' : ''}>Luta</option><option ${it.pericia === 'Pontaria' ? 'selected' : ''}>Pontaria</option></select>`)}` : ''}
+      ${isArm ? field('Bônus na Defesa', `<input id="x-def" type="number" inputmode="numeric" data-eb="defBase" data-n="1" data-redraw="item" value="${esc(it.defBase || 0)}">`) : ''}
+    </div>
+
+    <div class="card" style="display:grid;gap:10px">
+      <div class="row" style="justify-content:space-between"><b>Melhorias</b><span class="pill red">${ic.n}/4 · +${money(ic.precoMel)}</span></div>
+      <div class="ladder">${[1, 2, 3, 4].map(n => `<div class="${ic.n >= n ? 'on' : ''}">${n}ª<b>${money(MELHORIA_PRECO[n])}</b></div>`).join('')}</div>
+      <div>${list.map(m => { const on = it.melhorias.includes(m.nome); const locked = m.req && !it.melhorias.includes(m.req);
+        return `<div class="mel"><input id="mel-${esc(m.nome)}" type="checkbox" style="width:20px;height:20px;accent-color:var(--accent)" data-act="melT" data-n="${esc(m.nome)}" ${on ? 'checked' : ''} ${(!on && (ic.n >= 4 || locked)) ? 'disabled' : ''}>
+          <label for="mel-${esc(m.nome)}"><b>${esc(m.nome)}</b><div class="fx">${esc(m.fx || '')}${m.req ? ' Requer ' + esc(m.req) + '.' : ''}</div></label>
+          <span class="small muted num">${[m.atk && sgn(m.atk) + 'atq', m.dano && sgn(m.dano) + 'dano', m.def && sgn(m.def) + 'def'].filter(Boolean).join(' ')}</span></div>`; }).join('')}</div>
+      <details><summary class="small" style="cursor:pointer;color:var(--accent)">Criar melhoria personalizada</summary>
+        <div class="grid2" style="margin-top:8px">
+          ${field('Nome', '<input id="cm-nome" type="text">')}
+          ${field('Efeito', '<input id="cm-fx" type="text">')}
+          ${field('Bônus ataque', '<input id="cm-atk" type="number" inputmode="numeric" value="0">')}
+          ${field('Bônus dano', '<input id="cm-dano" type="number" inputmode="numeric" value="0">')}
+          ${field('Bônus Defesa', '<input id="cm-def" type="number" inputmode="numeric" value="0">')}
+        </div><button class="btn sm" style="margin-top:8px" data-act="melCustom">Adicionar</button></details>
+      ${ic.faltando.length ? `<div class="pill warn" style="white-space:normal">${esc(ic.faltando.join('; '))}</div>` : ''}
+    </div>
+
+    <div class="card" style="display:grid;gap:10px">
+      <b>Material especial</b>
+      <div class="grid2">
+        ${field('Material', `<select id="x-mat" data-eb="material">${MATERIAIS.map(t => `<option ${it.material === t ? 'selected' : ''}>${t}</option>`).join('')}</select>`)}
+        ${field('Custo extra (T$)', `<input id="x-pmat" type="number" inputmode="numeric" data-eb="precoMaterial" data-n="1" data-redraw="item" value="${esc(it.precoMaterial || 0)}">`)}
+      </div>
+    </div>
+
+    <div class="card" style="display:grid;gap:10px">
+      <div class="row" style="justify-content:space-between"><b>Encantos mágicos</b><button class="btn sm" data-act="encAdd">+ Encanto</button></div>
+      ${it.encantos.length ? it.encantos.map((e, i) => `<div style="display:grid;gap:6px;padding-top:8px;border-top:1px dashed var(--line)">
+        <div class="grid2">${field('Nome', `<input id="en-n-${i}" type="text" data-en="${i}" data-k="nome" value="${esc(e.nome)}">`)}${field('Custo (T$)', `<input id="en-p-${i}" type="number" inputmode="numeric" data-en="${i}" data-k="preco" value="${esc(e.preco || 0)}">`)}</div>
+        <div class="row"><input id="en-t-${i}" type="text" data-en="${i}" data-k="texto" value="${esc(e.texto || '')}" placeholder="Efeito" style="flex:1"><button class="btn ghost sm" data-act="encDel" data-i="${i}">Remover</button></div></div>`).join('') : '<div class="muted small">Ex.: Flamejante, Defensora, Veloz.</div>'}
+    </div>
+
+    ${field('Notas', `<textarea id="x-notas" data-eb="notas" rows="3">${esc(it.notas)}</textarea>`)}
+    <div class="total"><div><div>Valor total</div><div class="small muted">${[ic.atk && sgn(ic.atk) + ' ataque', ic.dano && sgn(ic.dano) + ' dano', isArm && sgn((+it.defBase || 0) + ic.def) + ' Defesa'].filter(Boolean).join(' · ') || 'Sem bônus numéricos'}</div></div><span class="big" style="font-size:1.4rem">${money(ic.total)}</span></div>
+    <label class="check"><input id="x-eq" type="checkbox" data-eb="equipado" ${it.equipado ? 'checked' : ''}> Equipado (entra na Defesa e nos ataques da ficha)</label>
+    <div class="row"><button class="btn pri" data-act="itemSave">Salvar item</button>${existing ? '<span class="spacer"></span><button class="btn danger" data-act="itemDel">Apagar</button>' : ''}</div>`);
+}
+
+function sheetNote(id) {
+  const c = C(); const n = id ? c.notas.find(x => x.id === id) : null;
+  editBuf = JSON.parse(JSON.stringify(n || { id: uid(), titulo: '', texto: '', tag: '', data: Date.now() }));
+  openSheet(`${sheetHead(n ? 'Anotação' : 'Nova anotação')}
+    ${field('Título', `<input id="n-t" type="text" data-eb="titulo" value="${esc(editBuf.titulo)}">`)}
+    ${field('Etiqueta', `<input id="n-g" type="text" data-eb="tag" value="${esc(editBuf.tag)}" list="tags" placeholder="Sessão, NPC, Missão, Pista">`)}
+    <datalist id="tags"><option>Sessão</option><option>NPC</option><option>Missão</option><option>Pista</option><option>Lugar</option><option>Loot</option></datalist>
+    <textarea id="n-x" data-eb="texto" rows="12" placeholder="Escreva aqui">${esc(editBuf.texto)}</textarea>
+    <div class="row"><button class="btn pri" data-act="noteSave">Salvar</button>${n ? '<span class="spacer"></span><button class="btn danger" data-act="noteDel">Apagar</button>' : ''}</div>`);
+}
+
+async function doExport() {
+  const json = JSON.stringify({ app: 'grimorio-tormenta', v: 1, chars: state.order.map(id => state.chars[id]) }, null, 1);
+  const filename = 'tormenta20-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+    if (dl) { await dl.save({ filename, data: json }); toast('Backup salvo.'); return; }
+  } catch (e) {}
+  if (!window.claude) {
+    try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = filename; a.click(); toast('Backup baixado.'); return; } catch (e) {}
+  }
+  openSheet(`${sheetHead('Exportar backup')}<p class="small muted" style="margin:0">Copie o texto e guarde num lugar seguro (ex.: e-mail para você mesmo).</p>
+    <textarea id="expt" rows="10" readonly>${esc(json)}</textarea><button class="btn pri" id="cpy">Copiar</button>`, s => {
+    s.querySelector('#cpy').onclick = () => { const ta = s.querySelector('#expt'); navigator.clipboard.writeText(ta.value).then(() => toast('Copiado.'), () => { ta.select(); toast('Selecionei o texto. Copie manualmente.'); }); };
+  });
+}
+function doImport() {
+  openSheet(`${sheetHead('Importar backup')}<input id="impf" type="file" accept=".json,application/json"><p class="small muted" style="margin:0">Ou cole o texto do backup:</p>
+    <textarea id="impt" rows="8"></textarea><button class="btn pri" id="impgo">Importar</button><p class="small muted" style="margin:0">Personagens importados são adicionados à lista; os atuais continuam.</p>`, s => {
+    s.querySelector('#impf').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { s.querySelector('#impt').value = r.result; }; r.readAsText(f); };
+    s.querySelector('#impgo').onclick = () => {
+      try {
+        const d = JSON.parse(s.querySelector('#impt').value);
+        const arr = Array.isArray(d.chars) ? d.chars : [d];
+        let n = 0;
+        arr.forEach(ch => { if (!ch || !ch.attrs) return; const base = blankChar(); const nc = Object.assign(base, ch); nc.id = state.chars[ch.id] ? uid() : (ch.id || uid()); delete nc.exemplo; nc.updatedAt = Date.now(); state.chars[nc.id] = nc; state.order.push(nc.id); state.active = nc.id; queueSave(nc.id); n++; });
+        if (!n) throw new Error();
+        lsWrite(); saveMeta(); closeSheet(); render(); toast(n + ' personagem(ns) importado(s).');
+      } catch (e) { toast('Não reconheci esse backup. Confira se colou o texto inteiro.'); }
+    };
+  });
+}
+
+/* Tema */
+function getTheme() { try { return localStorage.getItem('t20.theme') || 'auto'; } catch (e) { return 'auto'; } }
+function applyTheme() { const t = getTheme(); if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
+function themeLabel() { return { auto: 'automático', light: 'claro', dark: 'escuro' }[getTheme()]; }
+applyTheme();
+
+/* ================= Eventos ================= */
+function changePV(c, delta) {
+  if (delta < 0 && c.pvTemp > 0) { const use = Math.min(c.pvTemp, -delta); c.pvTemp -= use; delta += use; }
+  c.pvAtual = Math.min(pvMax(c), c.pvAtual + delta);
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act; const c = C();
+  if (a === 'closeBack') { if (e.target === el) closeSheet(); return; }
+  if (el.tagName === 'INPUT' && el.type === 'checkbox' && !['melT', 'castT'].includes(a)) return;
+  switch (a) {
+    case 'tab': state.tab = el.dataset.tab; lsWrite(); renderMain(); renderTabs(); window.scrollTo(0, 0); break;
+    case 'close': closeSheet(); break;
+    case 'pv': changePV(c, +el.dataset.d); touch(); renderTop(); break;
+    case 'pm': c.pmAtual = Math.max(0, Math.min(pmMax(c), c.pmAtual + (+el.dataset.d))); touch(); renderTop(); if (state.tab === 'magias') renderMain(); break;
+    case 'pvset': sheetSetBar('pv'); break;
+    case 'pmset': sheetSetBar('pm'); break;
+    case 'barApply': {
+      const v = parseInt($('#barn').value, 10); if (isNaN(v)) { toast('Digite um número.'); return; }
+      const m = +el.dataset.m, k = el.dataset.k;
+      if (k === 'pv') { if (m === 0) c.pvAtual = v; else changePV(c, m * Math.abs(v)); }
+      else { c.pmAtual = Math.max(0, Math.min(pmMax(c), m === 0 ? v : c.pmAtual + m * Math.abs(v))); }
+      touch(); closeSheet(); render(); break;
+    }
+    case 'barFull': if (el.dataset.k === 'pv') c.pvAtual = pvMax(c); else c.pmAtual = pmMax(c); touch(); closeSheet(); render(); break;
+    case 'rest': askConfirm('Recuperar todos os PV e PM do personagem?', 'Recuperar tudo', () => { c.pvAtual = pvMax(c); c.pmAtual = pmMax(c); touch(); render(); toast('PV e PM recuperados.'); }); break;
+    case 'attr': c.attrs[el.dataset.a] = Math.max(-5, Math.min(10, c.attrs[el.dataset.a] + (+el.dataset.d))); touch(); render(); break;
+    case 'chars': sheetChars(); break;
+    case 'pickChar': state.active = el.dataset.id; lsWrite(); saveMeta(); closeSheet(); render(); break;
+    case 'newChar': { const nc = blankChar($('#newname').value.trim() || 'Novo personagem'); state.chars[nc.id] = nc; state.order.push(nc.id); state.active = nc.id; state.tab = 'ficha'; touch(nc.id); saveMeta(); closeSheet(); render(); toast('Personagem criado.'); break; }
+    case 'delChar': { const id = el.dataset.id; const nm = state.chars[id].nome;
+      askConfirm(`Apagar <b>${esc(nm)}</b> com magias, itens e anotações? Não dá para desfazer.`, 'Apagar', () => {
+        delete state.chars[id]; state.order = state.order.filter(x => x !== id);
+        if (!state.order.length) { const nc = blankChar(); state.chars[nc.id] = nc; state.order = [nc.id]; queueSave(nc.id); }
+        if (!state.chars[state.active]) state.active = state.order[0];
+        lsWrite(); queueSave(id); saveMeta(); render(); toast('Personagem apagado.');
+      }); break; }
+    case 'd20': rollD20(el.dataset.label, +el.dataset.b); break;
+    case 'expr': rollExpr(el.dataset.e, el.dataset.label); break;
+    case 'exprIn': rollExpr($('#dexpr').value); break;
+    case 'clearRolls': state.rolls = []; renderMain(); break;
+    case 'export': doExport(); break;
+    case 'import': doImport(); break;
+    case 'theme': { const order = ['auto', 'light', 'dark']; const nx = order[(order.indexOf(getTheme()) + 1) % 3]; try { localStorage.setItem('t20.theme', nx); } catch (er) {} applyTheme(); renderMain(); break; }
+    /* magias */
+    case 'sfilter': { const v = el.dataset.v; state.spellFilter = v === 'p' ? 'p' : +v; renderMain(); break; }
+    case 'prep': { const m = c.magias.find(x => x.id === el.dataset.id); m.preparada = !m.preparada; touch(); renderMain(); const d = $('#sp-' + m.id); if (d) d.open = true; break; }
+    case 'cast': sheetCast(el.dataset.id); break;
+    case 'quickCast': castState = { id: null, circulo: 1, extra: 0, sel: [] }; drawCast(); break;
+    case 'castCirc': castState.circulo = +el.dataset.v; drawCast(); break;
+    case 'castA': { const i = +el.dataset.i; castState.sel[i] = Math.max(0, castState.sel[i] + (+el.dataset.d)); drawCast(); break; }
+    case 'castT': { const i = +el.dataset.i; castState.sel[i] = el.checked ? 1 : 0; drawCast(); break; }
+    case 'castX': castState.extra = Math.max(0, castState.extra + (+el.dataset.d)); drawCast(); break;
+    case 'castGo': { const t = +el.dataset.t; c.pmAtual = Math.max(0, c.pmAtual - t); touch(); closeSheet(); render(); toast(`Gastou <b>${t}</b> PM. Restam ${c.pmAtual}.`); break; }
+    case 'spellEdit': sheetSpell(el.dataset.id); break;
+    case 'aprimAdd': editBuf.aprim.push({ custo: 1, texto: '', rep: false }); drawSpellEdit(c.magias.some(x => x.id === editBuf.id)); break;
+    case 'aprimDel': editBuf.aprim.splice(+el.dataset.i, 1); drawSpellEdit(c.magias.some(x => x.id === editBuf.id)); break;
+    case 'spellSave': { if (!editBuf.nome.trim()) { toast('Dê um nome à magia.'); return; } const i = c.magias.findIndex(x => x.id === editBuf.id); if (i >= 0) c.magias[i] = editBuf; else c.magias.push(editBuf); touch(); closeSheet(); renderMain(); toast('Magia salva no grimório.'); break; }
+    case 'spellDel': askConfirm('Apagar esta magia do grimório?', 'Apagar', () => { c.magias = c.magias.filter(x => x.id !== editBuf.id); touch(); renderMain(); }); break;
+    /* itens */
+    case 'itemEdit': sheetItem(el.dataset.id); break;
+    case 'melT': { const n = el.dataset.n; if (el.checked) editBuf.melhorias.push(n); else { editBuf.melhorias = editBuf.melhorias.filter(x => x !== n);
+        const list = MELHORIAS[melKind(editBuf.tipo)].concat(editBuf.custom); editBuf.melhorias = editBuf.melhorias.filter(x => { const m = list.find(y => y.nome === x); return !(m && m.req === n); }); }
+      redrawItem(); break; }
+    case 'melCustom': { const nome = $('#cm-nome').value.trim(); if (!nome) { toast('Dê um nome à melhoria.'); return; }
+      editBuf.custom.push({ nome, fx: $('#cm-fx').value.trim(), atk: +$('#cm-atk').value || 0, dano: +$('#cm-dano').value || 0, def: +$('#cm-def').value || 0 }); redrawItem(); break; }
+    case 'encAdd': editBuf.encantos.push({ nome: '', texto: '', preco: 0 }); redrawItem(); break;
+    case 'encDel': editBuf.encantos.splice(+el.dataset.i, 1); redrawItem(); break;
+    case 'equip': { const it = c.itens.find(x => x.id === el.dataset.id); it.equipado = !it.equipado; touch(); render(); break; }
+    case 'itemSave': { if (!editBuf.nome.trim()) { toast('Dê um nome ao item.'); return; } const i = c.itens.findIndex(x => x.id === editBuf.id); if (i >= 0) c.itens[i] = editBuf; else c.itens.push(editBuf); touch(); closeSheet(); render(); toast('Item salvo.'); break; }
+    case 'itemDel': askConfirm('Apagar este item?', 'Apagar', () => { c.itens = c.itens.filter(x => x.id !== editBuf.id); touch(); render(); }); break;
+    /* notas */
+    case 'noteEdit': sheetNote(el.dataset.id); break;
+    case 'noteSave': { editBuf.data = editBuf.data || Date.now(); const i = c.notas.findIndex(x => x.id === editBuf.id); if (i >= 0) c.notas[i] = editBuf; else c.notas.push(editBuf); touch(); closeSheet(); renderMain(); toast('Anotação salva.'); break; }
+    case 'noteDel': askConfirm('Apagar esta anotação?', 'Apagar', () => { c.notas = c.notas.filter(x => x.id !== editBuf.id); touch(); renderMain(); }); break;
+  }
+});
+function redrawItem() {
+  const sc = $('#layer .sheet'); const y = sc ? sc.scrollTop : 0;
+  drawItemEdit(C().itens.some(x => x.id === editBuf.id));
+  const s2 = $('#layer .sheet'); if (s2) s2.scrollTop = y;
+}
+
+function readVal(el) {
+  if (el.type === 'checkbox') return el.checked;
+  if (el.type === 'number' || el.dataset.n) { const v = parseFloat(el.value); return isNaN(v) ? 0 : v; }
+  return el.value;
+}
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.bind) {
+    const c = C(); let v = readVal(el);
+    if (el.dataset.bind === 'nivel') v = Math.max(1, Math.min(20, Math.round(v) || 1));
+    setPath(c, el.dataset.bind, v);
+    if (el.dataset.bind === 'classe' && CLASSES[v]) { c.chave = CLASSES[v].chave; c.somaChavePM = !!CLASSES[v].conj; }
+    touch();
+    if (el.dataset.bind === 'nome') renderTop();
+    if (el.type === 'checkbox' || el.tagName === 'SELECT') render();
+    return;
+  }
+  if (el.dataset.eb != null) { editBuf[el.dataset.eb] = readVal(el); if (el.type === 'checkbox' || el.tagName === 'SELECT') { if (el.dataset.redraw === 'item' || el.id === 'x-tipo') redrawItem(); } return; }
+  if (el.dataset.ea != null) { const a = editBuf.aprim[+el.dataset.ea]; a[el.dataset.k] = el.dataset.k === 'custo' ? (+el.value || 0) : readVal(el); return; }
+  if (el.dataset.en != null) { const en = editBuf.encantos[+el.dataset.en]; en[el.dataset.k] = el.dataset.k === 'preco' ? (+el.value || 0) : el.value; return; }
+  if (el.dataset.actInput === 'noteq') {
+    state.noteQuery = el.value; const pos = el.selectionStart; renderMain();
+    const n = $('#noteq'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) {} }
+  }
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.bind && el.dataset.rerender && el.type !== 'checkbox' && el.tagName !== 'SELECT') render();
+  if (el.dataset.eb != null && el.dataset.redraw === 'item' && el.type === 'number') redrawItem();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#layer').innerHTML) closeSheet();
+  if (e.key === 'Enter' && e.target.id === 'dexpr') rollExpr(e.target.value);
+  if (e.key === 'Enter' && e.target.id === 'barn') { const b = document.querySelector('[data-act="barApply"][data-m="-1"]'); if (b) b.click(); }
+});
+
+render();
+cloudInit();
+if ('serviceWorker' in navigator && !window.claude && location.protocol === 'https:') { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+})();
+</script>
