@@ -1,0 +1,7 @@
+{
+  "appId": "br.com.tormenta20.grimorio",
+  "appName": "Grimório Tormenta",
+  "webDir": "docs",
+  "backgroundColor": "#111217",
+  "android": { "allowMixedContent": false }
+}

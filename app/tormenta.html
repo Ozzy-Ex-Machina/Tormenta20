@@ -914,7 +914,7 @@ async function doExport() {
     const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
     if (dl) { await dl.save({ filename, data: json }); toast('Backup salvo.'); return; }
   } catch (e) {}
-  if (!window.claude) {
+  if (!window.claude && !window.Capacitor) {
     try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = filename; a.click(); toast('Backup baixado.'); return; } catch (e) {}
   }
   openSheet(`${sheetHead('Exportar backup')}<p class="small muted" style="margin:0">Copie o texto e guarde num lugar seguro (ex.: e-mail para você mesmo).</p>
